@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,10 +12,11 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScore;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    private int m_Points = 0;
     
     private bool m_GameOver = false;
 
@@ -36,6 +38,9 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        ScoreText.text = $"{GameManager.Instance.nickname} Score : {m_Points}";
+        HighScore.text = $"Best Score : {GameManager.Instance.bestNickname} {GameManager.Instance.highScore}";
     }
 
     private void Update()
@@ -55,9 +60,15 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            if (m_Points >= GameManager.Instance.highScore)
+            {
+                GameManager.Instance.bestNickname = GameManager.Instance.nickname;
+                GameManager.Instance.SaveScore();
+            }
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene(0);
             }
         }
     }
@@ -65,12 +76,22 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        CheckScore(m_Points);
+        ScoreText.text = $"{GameManager.Instance.nickname} Score : {m_Points}";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    private void CheckScore(int score)
+    {
+        if (score >= GameManager.Instance.highScore)
+        {
+            GameManager.Instance.highScore = score;
+            HighScore.text = $"Best Score : {GameManager.Instance.nickname} {score}";
+        }
     }
 }
